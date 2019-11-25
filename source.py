@@ -25,6 +25,7 @@ def output(filename, sheet, list0, list1, list2, list3, list4, list5):
     col3_name = 'Dis_a(t)'
     col4_name = 'Dis_b(t)'
     col5_name = 'Die(t)'
+    col6_name = 'Ehe(t)'
 
     sh.write(0, 0, col0_name)
     sh.write(0, 1, col1_name)
@@ -32,6 +33,7 @@ def output(filename, sheet, list0, list1, list2, list3, list4, list5):
     sh.write(0, 3, col3_name)
     sh.write(0, 4, col4_name)
     sh.write(0, 5, col5_name)
+    sh.write(0, 6, col6_name)
 
     for m, e0 in enumerate(list0):
         sh.write(m + 1, 0, e0)
@@ -51,11 +53,32 @@ def output(filename, sheet, list0, list1, list2, list3, list4, list5):
     for m, e5 in enumerate(list5):
         sh.write(m + 1, 5, e5)
 
-    #for m, e5 in enumerate(list0):
-     #   sh.write(m + 1, 6, xlwt.Formula("'"+sheet+"'!D2+'"+sheet+"'!E2"))
+    for m in range(0, len(list1)):
+        sh.write(m + 1, 6, xlwt.Formula("'"+sheet+"'!B"+str(m+2)+"+'"+sheet+"'!C"+str(m+2)))
 
     book.save(filename)
 
+cols, rows = 31, 6
+##  GRINZI  ##
+eha = [[[0] for x in range(cols)] for y in range(rows)]
+ehb = [[[0] for x in range(cols)] for y in range(rows)]
+ehe = [[[0] for x in range(cols)] for y in range(rows)]
+dis_a = [[[0] for x in range(cols)] for y in range(rows)]
+dis_b = [[[0] for x in range(cols)] for y in range(rows)]
+die = [[[0] for x in range(cols)] for y in range(rows)]
+
+##  STALPI  ##
+ehx_a = [[[0] for x in range(cols)] for y in range(rows)]
+ehx_b = [[[0] for x in range(cols)] for y in range(rows)]
+ehy_a = [[[0] for x in range(cols)] for y in range(rows)]
+ehy_b = [[[0] for x in range(cols)] for y in range(rows)]
+dis_xa = [[[0] for x in range(cols)] for y in range(rows)]
+dis_xb = [[[0] for x in range(cols)] for y in range(rows)]
+dis_ya = [[[0] for x in range(cols)] for y in range(rows)]
+dis_yb = [[[0] for x in range(cols)] for y in range(rows)]
+dis_a_st = [[[0] for x in range(cols)] for y in range(rows)]
+dis_b_st = [[[0] for x in range(cols)] for y in range(rows)]
+die_st = [[[0] for x in range(cols)] for y in range(rows)]
 
 # ------------ GRINZI -------------#
 
@@ -88,7 +111,7 @@ for rulare in rulari:
     for etaj in range(1, 6):
         grinzi = os.listdir("data\\" + rulare +"\\"+ str(etaj) + "\Grinzi")
         print('Salvare date grinzi pentru etajul ' + str(etaj) + '...')
-
+        k = 0  ## al catelea element grinda este pe etaj
         #pentru fiecare grinda
         for grinda in grinzi:
             filename = "data\\" + rulare + "\\" + str(etaj) + "\\Grinzi\\" + grinda
@@ -138,11 +161,6 @@ for rulare in rulari:
                     # trec la urmatoarea linie
                     line = fp.readline()
 
-            eha = []
-            ehb = []
-            ehe = []
-            ehk = []
-
             # integrala de la t la tf din M(t)*R(t)
             # Eh(t-tf) = suma de la i=t la i=tf din M(i) * U(i) * (t de i+1 - t de i)
             for index in range(0, len(t) - 1):
@@ -153,48 +171,32 @@ for rulare in rulari:
                         eha_sum += mya[index2] * rya[index2] * (t[index2 + 1] - t[index2])
                     if uyb[index2] >= 1:
                         ehb_sum += myb[index2] * ryb[index2] * (t[index2 + 1] - t[index2])
-                eha.append(eha_sum)
-                ehb.append(ehb_sum)
-                ehe.append(eha[index] + ehb[index])
+                eha[etaj-1][k].append(eha_sum)
+                ehb[etaj-1][k].append(ehb_sum)
+                ehe[etaj-1][k].append(eha[etaj-1][k][index] + ehb[etaj-1][k][index])
 
             #demage index sectiune
-            dis_a = []
-            dis_b = []
-            die = []
-            for index in range(0, len(t) - 1):
-                dis_a.append(rya[index] / ru + beta * (eha[index] / (my[nr_grinda] * ru)))
-                dis_b.append(ryb[index] / ru + beta * (ehb[index] / (my[nr_grinda] * ru)))
 
-                if ((eha[index] + ehb[index]) != 0):
-                    aux = dis_a[index] * eha[index] / (eha[index] + ehb[index]) + dis_b[index] * ehb[index] / (
-                                eha[index] + ehb[index])
-                    die.append(aux)
+            for index in range(0, len(t) - 1):
+                dis_a[etaj-1][k].append(max(rya) / ru + beta * (eha[etaj-1][k][index] / (my[nr_grinda] * ru)))
+                dis_b[etaj-1][k].append(max(ryb) / ru + beta * (ehb[etaj-1][k][index] / (my[nr_grinda] * ru)))
+
+                if ((eha[etaj-1][k][index] + ehb[etaj-1][k][index]) != 0):
+                    aux = dis_a[etaj-1][k][index] * eha[etaj-1][k][index] / (eha[etaj-1][k][index] + ehb[etaj-1][k][index]) + dis_b[etaj-1][k][index] * ehb[etaj-1][k][index] / (
+                                eha[etaj-1][k][index] + ehb[etaj-1][k][index])
+                    die[etaj-1][k].append(aux)
                 else:
-                    die.append(0)
+                    die[etaj-1][k].append(0)
 
             print('Salvare date pentru grinda ' + str(nr_grinda) + '...')
-            output('exported\\'+rulare+'\grinzi_etaj_' + str(etaj) + '.xls', 'grinda ' + str(nr_grinda), t[:-1], eha, ehb, dis_a, dis_b, die)
+            output('exported\\'+rulare+'\grinzi_etaj_' + str(etaj) + '.xls', 'grinda ' + str(nr_grinda), t[:-1], eha[etaj-1][k], ehb[etaj-1][k], dis_a[etaj-1][k], dis_b[etaj-1][k], die[etaj-1][k])
             nr_grinda = nr_grinda + 1
 
-            #plotarea datelor
-
-            ''' 
-            fig, axs = plt.subplots(2, 2)
-            axs[0, 0].plot(t[:-1], eha)
-            axs[0, 0].set_title('Eha(t)')
-            axs[0, 1].plot(t[:-1], ehb, 'tab:orange')
-            axs[0, 1].set_title('Ehb(t)')
-            axs[1, 0].plot(t[:-1], dis_a, 'tab:green')
-            axs[1, 0].set_title('Demage_index_a(t)')
-            axs[1, 1].plot(t, rya, 'tab:red')
-            axs[1, 1].set_title('rya(t)')
-            plt.show()
-    '''
+        k = k + 1
 
     # ------------ END GRINZI -------------#
 
-
-    # ------------ STALPI -------------#
+    # ------------ STALPI -----------------#
 
     f = open("data\\"+rulare+"\data_column.txt", "r")
 
@@ -226,11 +228,12 @@ for rulare in rulari:
 
     stalpi = []
     nr_stalp = 1
+    k = 0 ## al catelea element stalp este pe etaj
     for etaj in range(1, 6):
         stalpi = os.listdir("data\\" + rulare + "\\" + str(etaj) + "\Stalpi")  ##fisierele cu stalpi
         print('Salvare date stalpi pentru etajul ' + str(etaj) + '...')
         for stalp in stalpi:
-            filename = "data\\" + str(etaj) + "\\Stalpi\\" + stalp
+            filename = "data\\" + rulare + "\\" + str(etaj) + "\\Stalpi\\" + stalp
             f = open(filename, "r")
             with f as fp:
                 # skip primele 2 linii (headere)
@@ -261,7 +264,6 @@ for rulare in rulari:
                     ryb.append(float(format(abs(float(column[4])), 'f')))
                     myb.append(abs(float(column[5])))
                     uyb.append(abs(float(column[6])))
-
                     rxa.append(float(format(abs(float(column[7])), 'f')))
                     mxa.append(abs(float(column[8])))
                     uxa.append(abs(float(column[9])))
@@ -272,12 +274,6 @@ for rulare in rulari:
                     # trec la urmatoarea linie
                     line = fp.readline()
 
-            ehx_a = []
-            ehx_b = []
-            ehy_a = []
-            ehy_b = []
-            eha = []
-            ehb = []
             # integrala de la t la tf din M(t)*R(t)
             # Eh(t-tf) = suma de la i=t la i=tf din M(i) * U(i) * (t de i+1 - t de i)
             for index in range(0, len(t) - 1):
@@ -294,50 +290,58 @@ for rulare in rulari:
                         ehya_sum += mya[index2] * rya[index2] * (t[index2 + 1] - t[index2])
                     if uyb[index2] >= 1:
                         ehyb_sum += myb[index2] * ryb[index2] * (t[index2 + 1] - t[index2])
-                ehx_a.append(ehxa_sum)
-                ehx_b.append(ehxb_sum)
-                ehy_a.append(ehya_sum)
-                ehy_b.append(ehyb_sum)
+                ehx_a[etaj-1][k].append(ehxa_sum)
+                ehx_b[etaj-1][k].append(ehxb_sum)
+                ehy_a[etaj-1][k].append(ehya_sum)
+                ehy_b[etaj-1][k].append(ehyb_sum)
 
             # demage index sectiune
 
-            dis_xa = []
-            dis_xb = []
-            dis_ya = []
-            dis_yb = []
-            dis_a = []
-            dis_b = []
-            die = []
             for index in range(0, len(t) - 1):
                 rux = 5 * rpx[nr_stalp]
                 ruy = 5 * rpy[nr_stalp]
 
-                dis_xa.append(rxa[index] / rux + beta * (ehx_a[index] / (myx[nr_stalp] * rux)))
-                dis_xb.append(rxb[index] / rux + beta * (ehx_b[index] / (myx[nr_stalp] * rux)))
-                dis_ya.append(rya[index] / ruy + beta * (ehy_a[index] / (myy[nr_stalp] * ruy)))
-                dis_yb.append(ryb[index] / ruy + beta * (ehy_b[index] / (myy[nr_stalp] * ruy)))
+                dis_xa[etaj-1][k].append(max(rxa) / rux + beta * (ehx_a[etaj-1][k][index] / (myx[nr_stalp] * rux)))
+                dis_xb[etaj-1][k].append(max(rxb) / rux + beta * (ehx_b[etaj-1][k][index] / (myx[nr_stalp] * rux)))
+                dis_ya[etaj-1][k].append(max(rya) / ruy + beta * (ehy_a[etaj-1][k][index] / (myy[nr_stalp] * ruy)))
+                dis_yb[etaj-1][k].append(max(ryb) / ruy + beta * (ehy_b[etaj-1][k][index] / (myy[nr_stalp] * ruy)))
 
-                eha.append(math.sqrt(ehx_a[index] * ehx_a[index] + ehy_a[index] * ehy_a[index]))
-                ehb.append(math.sqrt(ehx_b[index] * ehx_b[index] + ehy_b[index] * ehy_b[index]))
+                eha.append(math.sqrt(ehx_a[etaj-1][k][index] * ehx_a[etaj-1][k][index] + ehy_a[etaj-1][k][index] * ehy_a[etaj-1][k][index]))
+                ehb.append(math.sqrt(ehx_b[etaj-1][k][index] * ehx_b[etaj-1][k][index] + ehy_b[etaj-1][k][index] * ehy_b[etaj-1][k][index]))
 
                 # demage index sectiune stalpi
-                dis_a.append(math.sqrt(dis_xa[index] * dis_xa[index] + dis_ya[index] * dis_ya[index]))
-                dis_b.append(math.sqrt(dis_xb[index] * dis_xb[index] + dis_yb[index] * dis_yb[index]))
+                dis_a.append(math.sqrt(dis_xa[etaj-1][k][index] * dis_xa[etaj-1][k][index] + dis_ya[etaj-1][k][index] * dis_ya[etaj-1][k][index]))
+                dis_b.append(math.sqrt(dis_xb[etaj-1][k][index] * dis_xb[etaj-1][k][index] + dis_yb[etaj-1][k][index] * dis_yb[etaj-1][k][index]))
 
                 if ((eha[index] + ehb[index]) != 0):
-                    aux = dis_a[index] * eha[index] / (eha[index] + ehb[index]) + dis_b[index] * ehb[index] / (
-                            eha[index] + ehb[index])
-                    die.append(aux)
+                    aux = dis_a[etaj-1][k][index] * eha[etaj-1][k][index] / (eha[etaj-1][k][index] + ehb[etaj-1][k][index]) + dis_b[etaj-1][k][index] * ehb[etaj-1][k][index] / (
+                            eha[etaj-1][k][index] + ehb[etaj-1][k][index])
+                    die[etaj-1][k].append(aux)
                 else:
-                    die.append(0)
+                    die[etaj-1][k].append(0)
 
             print('Salvare date pentru grinda ' + str(nr_stalp) + '...')
             output('exported\\'+rulare+'\stalpi_etaj_' + str(etaj) + '.xls', 'grinda ' + str(nr_stalp), t[:-1], eha, ehb, dis_a, dis_b, die)
             nr_stalp = nr_stalp + 1
 
+        k = k + 1
 
-        #damage index etaj
+        #damage index etaj ??
 
+
+    # plotarea datelor
+    ''' 
+    fig, axs = plt.subplots(2, 2)
+    axs[0, 0].plot(t[:-1], eha)
+    axs[0, 0].set_title('Eha(t)')
+    axs[0, 1].plot(t[:-1], ehb, 'tab:orange')
+    axs[0, 1].set_title('Ehb(t)')
+    axs[1, 0].plot(t[:-1], dis_a, 'tab:green')
+    axs[1, 0].set_title('Demage_index_a(t)')
+    axs[1, 1].plot(t, rya, 'tab:red')
+    axs[1, 1].set_title('rya(t)')
+    plt.show()
+    '''
 
 
 
