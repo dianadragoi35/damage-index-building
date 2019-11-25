@@ -313,7 +313,7 @@ for rulare in rulari:
                 dis_a.append(math.sqrt(dis_xa[etaj-1][k][index] * dis_xa[etaj-1][k][index] + dis_ya[etaj-1][k][index] * dis_ya[etaj-1][k][index]))
                 dis_b.append(math.sqrt(dis_xb[etaj-1][k][index] * dis_xb[etaj-1][k][index] + dis_yb[etaj-1][k][index] * dis_yb[etaj-1][k][index]))
 
-                if ((eha[index] + ehb[index]) != 0):
+                if ((eha[etaj-1][k][index] + ehb[etaj-1][k][index]) != 0):
                     aux = dis_a[etaj-1][k][index] * eha[etaj-1][k][index] / (eha[etaj-1][k][index] + ehb[etaj-1][k][index]) + dis_b[etaj-1][k][index] * ehb[etaj-1][k][index] / (
                             eha[etaj-1][k][index] + ehb[etaj-1][k][index])
                     die[etaj-1][k].append(aux)
